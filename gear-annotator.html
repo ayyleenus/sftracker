@@ -242,7 +242,7 @@ const SLOTS = [
 const SW=41, SH=41, REF_W=342, REF_H=347;
 
 // ── State ────────────────────────────────────────────────────────────────────
-let img=null, anns=[], multiSelected=new Set(), bulkColor='#ffffff';
+let img=null, anns=[], multiSelected=new Set();
 let scaleX=1, scaleY=1;
 
 let presets=[
@@ -410,7 +410,7 @@ function applyTo(slots, corners){
   slots.forEach(i=>{
     corners.forEach(corner=>{
       anns = anns.filter(a=>!(a.slot===i&&a.corner===corner));
-      anns.push({slot:i, corner, value:v, color:bulkColor});
+      anns.push({slot:i, corner, value:v, color:'#ffffff'});
     });
   });
   redraw();

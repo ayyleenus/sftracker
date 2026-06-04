@@ -193,9 +193,6 @@
     <div class="card">
       <span class="lbl" style="margin-bottom:8px;">Export</span>
       <button class="dl-btn" id="dlBtn" style="margin-bottom:6px;">⬇ Download image</button>
-      <a href="gear-annotator.html" style="display:block; width:100%; padding:9px; font-size:13px; font-weight:600; background:#1a3a6a; color:#66aaff; border:1px solid #66aaff; border-radius:8px; cursor:pointer; text-align:center; text-decoration:none;">
-        ⭐ Switch to Star Forcing (reuse this image)
-      </a>
     </div>
   </div>
 </div>
@@ -234,7 +231,7 @@ const SLOTS = [
 
 const SW=41, SH=41, REF_W=342, REF_H=347;
 
-let img=null, anns=[], multiSelected=new Set(), selectedColor='#ffffff'; // always white
+let img=null, anns=[], multiSelected=new Set();
 let scaleX=1, scaleY=1;
 let currentSet='A', selectedValue=null;
 
@@ -289,22 +286,6 @@ function detectAndCrop(imageData, w, h){
 }
 
 // ── Upload ────────────────────────────────────────────────────────────────────
-function applyImage(srcDataURL){
-  img = new Image();
-  img.onload = function(){
-    canvas.width=img.width; canvas.height=img.height;
-    scaleX=img.width/REF_W; scaleY=img.height/REF_H;
-    anns=[]; multiSelected.clear();
-    document.getElementById('landing').style.display='none';
-    document.getElementById('editor').style.display='flex';
-    document.getElementById('loadNextLabel').style.display='block';
-    buildOverlay(); redraw();
-    document.getElementById('charName').value='';
-    document.getElementById('charName').focus();
-  };
-  img.src=srcDataURL;
-}
-
 function loadFile(file){
   if(!file) return;
   const notice = document.getElementById('cropNotice');
@@ -332,24 +313,25 @@ function loadFile(file){
       const srcDataURL=crop.toDataURL('image/png');
       notice.className='ok'; notice.style.display='block';
       notice.textContent='✓ Equipment window detected and cropped.';
-      localStorage.setItem('ms_equip_crop', srcDataURL);
-      applyImage(srcDataURL);
+      img = new Image();
+      img.onload = function(){
+        canvas.width=img.width; canvas.height=img.height;
+        scaleX=img.width/REF_W; scaleY=img.height/REF_H;
+        anns=[]; multiSelected.clear();
+        document.getElementById('landing').style.display='none';
+        document.getElementById('editor').style.display='flex';
+        document.getElementById('loadNextLabel').style.display='block';
+        buildOverlay(); redraw();
+        document.getElementById('charName').value='';
+        document.getElementById('charName').focus();
+      };
+      img.src=srcDataURL;
     };
     original.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// Auto-load image from star forcing if available
-window.addEventListener('load', function(){
-  const cached = localStorage.getItem('ms_equip_crop');
-  if(cached){
-    const notice = document.getElementById('cropNotice');
-    notice.className='ok'; notice.style.display='block';
-    notice.textContent='✓ Loaded your equipment image from Star Forcing.';
-    applyImage(cached);
-  }
-});
 
 document.getElementById('fileInput').addEventListener('change', function(){
   const f=this.files[0]; this.value=''; if(f) loadFile(f);
@@ -403,7 +385,7 @@ function applyTo(slots, corners){
   slots.forEach(i=>{
     corners.forEach(corner=>{
       anns=anns.filter(a=>!(a.slot===i&&a.corner===corner));
-      anns.push({slot:i, corner, value:selectedValue, color:selectedColor});
+      anns.push({slot:i, corner, value:selectedValue, color:'#ffffff'});
     });
   });
   redraw();
