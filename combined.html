@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MapleStory Gear Snapshot</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; padding: 16px; }
+  h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.2; }
+
+  /* Landing */
+  #landing { min-height: calc(100vh - 32px); display: flex; align-items: center; justify-content: center; }
+  #landingInner { display: flex; align-items: center; gap: 60px; max-width: 900px; width: 100%; flex-wrap: wrap; justify-content: center; }
+  #landingText { flex: 1; min-width: 260px; max-width: 440px; }
+  .landing-logo { font-size: 40px; margin-bottom: 10px; }
+  .landing-desc { font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 18px; }
+  .landing-features { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .landing-features li { font-size: 13px; color: #ccc; padding: 8px 12px; background: #16213e; border: 1px solid #2a2a4a; border-radius: 8px; }
+  #requirements { margin-top: 20px; border: 1px solid #3a3a6a; border-radius: 10px; overflow: hidden; }
+  #req-title { background: #1a3a6a; color: #66aaff; font-size: 13px; font-weight: 700; padding: 10px 14px; }
+  .req-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; border-top: 1px solid #2a2a4a; font-size: 13px; color: #ccc; line-height: 1.5; }
+  .req-item strong { color: #fff; }
+  .req-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: #1a3a6a; color: #66aaff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .req-sub { font-size: 11px; color: #666; }
+  .req-big { background: rgba(255,200,0,0.05); border-top: 1px solid #3a3a2a; }
+  .req-big strong { color: #ffcc44; }
+  #landingUpload { flex-shrink: 0; }
+  #uploadLabel { display: block; width: 240px; border: 2px dashed #3a3a6a; border-radius: 16px; padding: 40px 28px; text-align: center; cursor: pointer; background: #16213e; transition: border-color 0.2s, background 0.2s, transform 0.15s; }
+  #uploadLabel:hover { border-color: #66aaff; background: #1a2a4e; transform: translateY(-2px); }
+  .upload-icon { font-size: 40px; margin-bottom: 14px; }
+  .upload-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .upload-sub { font-size: 12px; color: #666; line-height: 1.5; margin-bottom: 16px; }
+  .upload-cta { display: inline-block; padding: 9px 20px; background: #1a3a6a; color: #66aaff; border: 1px solid #66aaff; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  #uploadLabel:hover .upload-cta { background: #234a8a; }
+  .back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: #888; text-decoration: none; }
+  .back-link:hover { color: #66aaff; }
+
+  /* Editor */
+  #editor { display: none; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  #canvasWrap { position: relative; flex-shrink: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+  canvas { display: block; }
+  #slotOverlay { position: absolute; top: 0; left: 0; pointer-events: none; }
+  .slot-box { position: absolute; border: 1.5px solid transparent; border-radius: 3px; cursor: pointer; pointer-events: all; }
+  .slot-box:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.07); }
+  .slot-box.sel-sf   { border-color: rgba(80,180,255,0.9);  background: rgba(80,180,255,0.15); }
+  .slot-box.sel-cube { border-color: rgba(180,100,255,0.9); background: rgba(180,100,255,0.15); }
+  #loadNextLabel { display: none; margin-top: 8px; width: 100%; text-align: center; padding: 8px; font-size: 12px; border-radius: 8px; border: 1px solid #333; background: #0f0f23; color: #888; cursor: pointer; }
+  #loadNextLabel:hover { border-color: #66aaff; color: #66aaff; }
+
+  /* Panel */
+  .panel { flex: 1; min-width: 230px; display: flex; flex-direction: column; gap: 10px; }
+  .card { background: #16213e; border: 1px solid #2a2a4a; border-radius: 10px; padding: 12px 14px; }
+  .lbl { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 5px; }
+  input[type=text] { width: 100%; padding: 7px 10px; background: #0f0f23; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-size: 13px; margin-bottom: 8px; }
+  input[type=text]:focus { outline: none; border-color: #66aaff; }
+  input[type=number].sf-input { width: 100%; padding: 7px 10px; background: #0f0f23; border: 1px solid #1a3a6a; border-radius: 6px; color: #e0e0e0; font-size: 14px; font-weight: 600; margin-bottom: 8px; -moz-appearance: textfield; text-align: center; }
+  input[type=number].sf-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type=number].sf-input:focus { outline: none; border-color: #66aaff; }
+  .btns { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+  .btn { flex: 1; padding: 7px 6px; font-size: 12px; border-radius: 6px; border: 1px solid #333; background: #0f0f23; color: #ccc; cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: #66aaff; color: #66aaff; }
+  .btn.sf { background: #1a3a6a; color: #66aaff; border-color: #66aaff; }
+  .btn.sf:hover { background: #234a8a; }
+  .btn.cube { background: #2a1a4a; color: #cc88ff; border-color: #8844cc; }
+  .btn.cube:hover { background: #3a2a5a; }
+  .btn.danger { color: #ff6666; } .btn.danger:hover { border-color: #ff6666; }
+  .divider { border: none; border-top: 1px solid #2a2a4a; margin: 10px 0; }
+  .hint { font-size: 11px; color: #666; line-height: 1.5; }
+  .err { font-size: 11px; color: #ff6666; margin-top: -6px; margin-bottom: 6px; display: none; }
+  .err.on { display: block; }
+  .dl-btn { width: 100%; padding: 9px; font-size: 13px; font-weight: 600; background: #1a3a6a; color: #66aaff; border: 1px solid #66aaff; border-radius: 8px; cursor: pointer; }
+  .dl-btn:hover { background: #234a8a; }
+
+  /* mode toggle */
+  .mode-toggle { display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a4a; margin-bottom: 10px; }
+  .mode-btn { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; text-align: center; background: #0f0f23; color: #888; transition: background 0.15s, color 0.15s; }
+  .mode-btn.on.sf   { background: #1a3a6a; color: #66aaff; }
+  .mode-btn.on.cube { background: #2a1a4a; color: #cc88ff; }
+
+  /* cubing val grid */
+  .val-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
+  .val-btn { padding: 7px 4px; font-size: 12px; font-weight: 600; border-radius: 6px; border: 1px solid #333; background: #0f0f23; color: #ccc; cursor: pointer; text-align: center; }
+  .val-btn:hover { border-color: #cc88ff; color: #cc88ff; }
+  .val-btn.on { background: #2a1a4a; color: #cc88ff; border-color: #8844cc; }
+  .set-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+  .set-btn { flex: 1; padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #333; background: #0f0f23; color: #888; cursor: pointer; text-align: center; font-weight: 600; }
+  .set-btn.on { background: #2a1a4a; color: #cc88ff; border-color: #8844cc; }
+
+  #cropNotice { display:none; padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 10px; }
+  #cropNotice.ok   { background:#0f2a0f; border:1px solid #2a6a2a; color:#88cc88; }
+  #cropNotice.warn { background:#2a1a0f; border:1px solid #6a4a2a; color:#ccaa66; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 12px; font-size: 11px; color: #888; margin-bottom: 8px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+<input type="file" id="fileInputNext" accept="image/*" style="display:none">
+
+<!-- LANDING -->
+<div id="landing">
+  <div id="landingInner">
+    <div id="landingText">
+      <a class="back-link" href="index.html">← Back to tools</a>
+      <div class="landing-logo">⚔️💎</div>
+      <h1>MapleStory<br>Gear Snapshot</h1>
+      <p class="landing-desc">
+        Track both star force and cubing targets in a single screenshot.
+        Top right of each slot shows star force (0–30), bottom left shows
+        your cubing % target. Slots exclusive to cubing or star forcing
+        only show the relevant input.
+      </p>
+      <ul class="landing-features">
+        <li>⭐ Top right — Star force (0–30)</li>
+        <li>💎 Bottom left — Cubing % target</li>
+        <li>✦ Cubing-only slots (Emblem, Badge) only show cubing</li>
+        <li>✦ Auto-detects your equipment window from any screenshot</li>
+      </ul>
+      <div id="requirements">
+        <div id="req-title">📋 Before you upload — requirements</div>
+        <div class="req-item">
+          <span class="req-num">1</span>
+          <span>Set your resolution to <strong>1366 × 768</strong><br><span class="req-sub">Options → Graphics → Resolution</span></span>
+        </div>
+        <div class="req-item">
+          <span class="req-num">2</span>
+          <span>Set UI Size to <strong>Ideal Ratio</strong><br><span class="req-sub">Options → UI → UI Size</span></span>
+        </div>
+        <div class="req-item req-big">
+          <span class="req-num">3</span>
+          <span>Screenshot your <strong>Equipment tab</strong> in a <strong>visually distinct, uncluttered map</strong>. Avoid towns and busy areas.</span>
+        </div>
+        <div class="req-item req-big">
+          <span class="req-num">4</span>
+          <span><strong>Hide your Special Ring slot</strong> before screenshotting — right-click the slot and select Hide.<br><span class="req-sub">The slot grid won't align correctly if it is visible.</span></span>
+        </div>
+      </div>
+    </div>
+    <div id="landingUpload">
+      <label id="uploadLabel" for="fileInput">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title">Upload screenshot</div>
+        <div class="upload-sub">Full game screenshot or cropped<br>equipment window — both work</div>
+        <div class="upload-cta">Click to get started</div>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- EDITOR -->
+<div id="editor">
+  <div>
+    <div id="cropNotice"></div>
+    <div id="canvasWrap">
+      <canvas id="mainCanvas"></canvas>
+      <div id="slotOverlay"></div>
+    </div>
+    <label id="loadNextLabel" for="fileInputNext">📂 Load next character</label>
+  </div>
+
+  <div class="panel">
+    <!-- Name -->
+    <div class="card">
+      <span class="lbl">Character name</span>
+      <input type="text" id="charName" placeholder="e.g. Character Name / Class" maxlength="60" autocomplete="off">
+    </div>
+
+    <!-- Mode + inputs -->
+    <div class="card">
+      <span class="lbl" style="margin-bottom:6px;">Editing mode</span>
+      <div class="mode-toggle">
+        <button class="mode-btn on sf" data-mode="sf">⭐ Star Force</button>
+        <button class="mode-btn cube" data-mode="cube">💎 Cubing</button>
+      </div>
+
+      <!-- SF panel -->
+      <div id="sfPanel">
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#66aaff;"></span>Blue = SF slot selected</span>
+        </div>
+        <span class="lbl">Star force value (0–30)</span>
+        <input type="number" class="sf-input" id="sfInput" min="0" max="30" placeholder="e.g. 22">
+        <div class="err" id="sfErr">Enter a number between 0 and 30.</div>
+        <div class="btns">
+          <button class="btn sf" id="sfApplySel">Apply to selected</button>
+          <button class="btn sf" id="sfApplyAll">Apply to ALL</button>
+        </div>
+        <div class="btns">
+          <button class="btn danger" id="sfClearSel">Clear selected</button>
+          <button class="btn danger" id="sfClearAll">Clear all SF</button>
+        </div>
+      </div>
+
+      <!-- Cube panel -->
+      <div id="cubePanel" style="display:none;">
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#cc88ff;"></span>Purple = Cube slot selected</span>
+        </div>
+        <span class="lbl">Stat line set</span>
+        <div class="set-toggle">
+          <button class="set-btn on" id="setA">&lt;160</button>
+          <button class="set-btn" id="setB">160+</button>
+        </div>
+        <span class="lbl">Cubing % value</span>
+        <div class="val-grid" id="valGrid"></div>
+        <div class="btns">
+          <button class="btn cube" id="cubeApplySel">Apply to selected</button>
+          <button class="btn cube" id="cubeApplyAll">Apply to ALL</button>
+        </div>
+        <div class="btns">
+          <button class="btn danger" id="cubeClearSel">Clear selected</button>
+          <button class="btn danger" id="cubeClearAll">Clear all Cube</button>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="btns" style="margin-bottom:0;">
+        <button class="btn danger" id="clearEverything">Clear everything</button>
+      </div>
+    </div>
+
+    <!-- Export -->
+    <div class="card">
+      <span class="lbl" style="margin-bottom:8px;">Export</span>
+      <button class="dl-btn" id="dlBtn">⬇ Download image</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Slot definitions ──────────────────────────────────────────────────────────
+// type: 'both' | 'cube'  (all SF slots are shared, 3 are cube-only)
+const SLOTS = [
+  {x:15,  y:39,  name:'Ring 1',        type:'both'},
+  {x:15,  y:84,  name:'Ring 2',        type:'both'},
+  {x:15,  y:129, name:'Ring 3',        type:'both'},
+  {x:15,  y:174, name:'Ring 4',        type:'both'},
+  {x:15,  y:219, name:'Belt',          type:'both'},
+  {x:60,  y:39,  name:'Face Accessory',type:'both'},
+  {x:60,  y:84,  name:'Eye Accessory', type:'both'},
+  {x:60,  y:129, name:'Earring',       type:'both'},
+  {x:60,  y:174, name:'Pendant 1',     type:'both'},
+  {x:60,  y:219, name:'Pendant 2',     type:'both'},
+  {x:105, y:219, name:'Weapon',        type:'both'},
+  {x:150, y:219, name:'Secondary',     type:'both'},
+  {x:195, y:219, name:'Emblem',        type:'cube'}, // cube only
+  {x:240, y:39,  name:'Hat',           type:'both'},
+  {x:240, y:84,  name:'Top',           type:'both'},
+  {x:240, y:129, name:'Bottom',        type:'both'},
+  {x:240, y:174, name:'Shoulder',      type:'both'},
+  {x:285, y:39,  name:'Cape',          type:'both'},
+  {x:285, y:84,  name:'Gloves',        type:'both'},
+  {x:285, y:129, name:'Shoes',         type:'both'},
+  {x:285, y:219, name:'Heart',         type:'both'},
+  {x:285, y:264, name:'Badge',         type:'cube'}, // cube only
+];
+
+const CUBE_SETS = {
+  A: [12,15,18,21,24,27,30,33,36],
+  B: [13,17,20,23,26,27,30,33,36,39],
+};
+
+const SW=41, SH=41, REF_W=342, REF_H=347;
+
+let img=null, scaleX=1, scaleY=1;
+let sfAnns   = {}; // slot index -> value (0-30)
+let cubeAnns = {}; // slot index -> value (number)
+let selected = new Set();
+let mode = 'sf'; // 'sf' | 'cube'
+let cubeSet = 'A';
+let cubeValue = null;
+
+const canvas  = document.getElementById('mainCanvas');
+const ctx     = canvas.getContext('2d');
+const overlay = document.getElementById('slotOverlay');
+
+// ── Window detection ──────────────────────────────────────────────────────────
+function detectAndCrop(imageData, w, h){
+  const d=imageData.data, rc=new Int32Array(h), cc=new Int32Array(w);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    const i=(y*w+x)*4;
+    if(Math.abs(d[i]-238)<=6&&Math.abs(d[i+1]-238)<=6&&Math.abs(d[i+2]-238)<=6){rc[y]++;cc[x]++;}
+  }
+  let top=-1,bot=-1,left=-1,right=-1;
+  for(let y=0;y<h;y++) if(rc[y]>80){if(top===-1)top=y;bot=y;}
+  for(let x=0;x<w;x++) if(cc[x]>80){if(left===-1)left=x;right=x;}
+  if(top===-1) return null;
+  const cw=right-left+1,ch=bot-top+1;
+  if(cw<250||cw>500||ch<250||ch>500) return null;
+  return{top,left,cw,ch};
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+function loadFile(file){
+  if(!file) return;
+  const notice=document.getElementById('cropNotice');
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const original=new Image();
+    original.onload=function(){
+      const off=document.createElement('canvas');
+      off.width=original.width; off.height=original.height;
+      const offCtx=off.getContext('2d'); offCtx.drawImage(original,0,0);
+      let b=null;
+      try{ const id=offCtx.getImageData(0,0,original.width,original.height); b=detectAndCrop(id,original.width,original.height); }catch(e){}
+      if(!b){
+        notice.className='warn'; notice.style.display='block';
+        notice.textContent='❌ No MapleStory equipment window detected. Please follow the requirements and try again.';
+        return;
+      }
+      const crop=document.createElement('canvas'); crop.width=b.cw; crop.height=b.ch;
+      crop.getContext('2d').drawImage(off,b.left,b.top,b.cw,b.ch,0,0,b.cw,b.ch);
+      const srcDataURL=crop.toDataURL('image/png');
+      notice.className='ok'; notice.style.display='block';
+      notice.textContent='✓ Equipment window detected and cropped.';
+      img=new Image();
+      img.onload=function(){
+        canvas.width=img.width; canvas.height=img.height;
+        scaleX=img.width/REF_W; scaleY=img.height/REF_H;
+        sfAnns={}; cubeAnns={}; selected.clear();
+        document.getElementById('landing').style.display='none';
+        document.getElementById('editor').style.display='flex';
+        document.getElementById('loadNextLabel').style.display='block';
+        buildOverlay(); redraw();
+        document.getElementById('charName').value='';
+        document.getElementById('charName').focus();
+      };
+      img.src=srcDataURL;
+    };
+    original.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById('fileInput').addEventListener('change',function(){ const f=this.files[0]; this.value=''; if(f) loadFile(f); });
+document.getElementById('fileInputNext').addEventListener('change',function(){ const f=this.files[0]; this.value=''; if(f) loadFile(f); });
+
+// ── Mode toggle ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.mode-btn').forEach(b=>b.addEventListener('click',()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll('.mode-btn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById('sfPanel').style.display   = mode==='sf'   ? 'block' : 'none';
+  document.getElementById('cubePanel').style.display = mode==='cube' ? 'block' : 'none';
+  selected.clear();
+  refreshOverlay();
+}));
+
+// ── Overlay ───────────────────────────────────────────────────────────────────
+function sr(s){ return{x:Math.round(s.x*scaleX),y:Math.round(s.y*scaleY),w:Math.round(SW*scaleX),h:Math.round(SH*scaleY)}; }
+
+function buildOverlay(){
+  overlay.innerHTML='';
+  overlay.style.width=canvas.width+'px'; overlay.style.height=canvas.height+'px';
+  SLOTS.forEach((s,i)=>{
+    const{x,y,w,h}=sr(s);
+    const d=document.createElement('div');
+    d.className='slot-box'; d.id='sb'+i;
+    d.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+    d.title=s.name;
+    d.addEventListener('click',()=>toggleSlot(i));
+    overlay.appendChild(d);
+  });
+}
+
+function refreshOverlay(){
+  SLOTS.forEach((s,i)=>{
+    const el=document.getElementById('sb'+i); if(!el) return;
+    const isSel = selected.has(i);
+    // Dim slots not relevant to current mode
+    const relevant = mode==='sf' ? s.type!=='cube' : true;
+    let cls='slot-box';
+    if(isSel) cls += mode==='sf' ? ' sel-sf' : ' sel-cube';
+    el.className=cls;
+    el.style.opacity = relevant ? '1' : '0.35';
+    el.style.cursor  = relevant ? 'pointer' : 'not-allowed';
+  });
+}
+
+function toggleSlot(i){
+  const s=SLOTS[i];
+  // Block SF mode from selecting cube-only slots
+  if(mode==='sf' && s.type==='cube') return;
+  if(selected.has(i)) selected.delete(i); else selected.add(i);
+  refreshOverlay();
+}
+
+// ── SF controls ───────────────────────────────────────────────────────────────
+const sfInput=document.getElementById('sfInput');
+const sfErr=document.getElementById('sfErr');
+sfInput.addEventListener('keypress',e=>{ if(!/[0-9]/.test(e.key)) e.preventDefault(); });
+sfInput.addEventListener('input',()=>{
+  sfInput.value=sfInput.value.replace(/[^0-9]/g,'');
+  const v=parseInt(sfInput.value);
+  sfErr.classList.toggle('on', sfInput.value!=='' && (isNaN(v)||v<0||v>30));
+});
+function getSFVal(){
+  const v=parseInt(sfInput.value);
+  if(isNaN(v)||v<0||v>30){ sfErr.classList.add('on'); sfInput.focus(); return null; }
+  sfErr.classList.remove('on'); return v;
+}
+function applySF(slots){
+  const v=getSFVal(); if(v===null) return;
+  slots.forEach(i=>{ sfAnns[i]=v; });
+  redraw();
+}
+document.getElementById('sfApplySel').addEventListener('click',()=>applySF([...selected]));
+document.getElementById('sfApplyAll').addEventListener('click',()=>applySF(SLOTS.map((_,i)=>i).filter(i=>SLOTS[i].type!=='cube')));
+document.getElementById('sfClearSel').addEventListener('click',()=>{ selected.forEach(i=>delete sfAnns[i]); redraw(); });
+document.getElementById('sfClearAll').addEventListener('click',()=>{ sfAnns={}; redraw(); });
+
+// ── Cube controls ─────────────────────────────────────────────────────────────
+function buildValGrid(){
+  const grid=document.getElementById('valGrid'); grid.innerHTML='';
+  CUBE_SETS[cubeSet].forEach(v=>{
+    const btn=document.createElement('button');
+    btn.className='val-btn'+(v===cubeValue?' on':'');
+    btn.textContent=v+'%';
+    btn.addEventListener('click',()=>{ cubeValue=v; document.querySelectorAll('.val-btn').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); });
+    grid.appendChild(btn);
+  });
+  if(!CUBE_SETS[cubeSet].includes(cubeValue)) cubeValue=null;
+}
+document.getElementById('setA').addEventListener('click',()=>{ cubeSet='A'; document.getElementById('setA').classList.add('on'); document.getElementById('setB').classList.remove('on'); buildValGrid(); });
+document.getElementById('setB').addEventListener('click',()=>{ cubeSet='B'; document.getElementById('setB').classList.add('on'); document.getElementById('setA').classList.remove('on'); buildValGrid(); });
+
+function applyCube(slots){
+  if(cubeValue===null){ alert('Pick a % value first.'); return; }
+  slots.forEach(i=>{ cubeAnns[i]=cubeValue; });
+  redraw();
+}
+document.getElementById('cubeApplySel').addEventListener('click',()=>applyCube([...selected]));
+document.getElementById('cubeApplyAll').addEventListener('click',()=>applyCube(SLOTS.map((_,i)=>i)));
+document.getElementById('cubeClearSel').addEventListener('click',()=>{ selected.forEach(i=>delete cubeAnns[i]); redraw(); });
+document.getElementById('cubeClearAll').addEventListener('click',()=>{ cubeAnns={}; redraw(); });
+document.getElementById('clearEverything').addEventListener('click',()=>{ if(!confirm('Clear all annotations?')) return; sfAnns={}; cubeAnns={}; redraw(); });
+
+// ── Draw ──────────────────────────────────────────────────────────────────────
+function fitFs(txt, w, h, sz){
+  ctx.font=`bold ${sz}px Arial`;
+  while(sz>5&&ctx.measureText(txt).width>w-5){ sz--; ctx.font=`bold ${sz}px Arial`; }
+  return Math.min(sz, h-4);
+}
+function drawText(txt, x, y, align, color){
+  [[0,-1],[0,1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([ox,oy])=>{
+    ctx.fillStyle='#000'; ctx.fillText(txt,x+ox,y+oy);
+  });
+  ctx.fillStyle=color; ctx.fillText(txt,x,y);
+}
+
+function redraw(){
+  if(!img) return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,0,0);
+
+  // Dim slots with no annotations
+  const annotated=new Set([...Object.keys(sfAnns).map(Number), ...Object.keys(cubeAnns).map(Number)]);
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  annotated.forEach(si=>{
+    const{x,y,w,h}=sr(SLOTS[si]);
+    ctx.drawImage(img,x-1,y-1,w+2,h+2,x-1,y-1,w+2,h+2);
+  });
+
+  // Draw SF annotations — top right, white
+  SLOTS.forEach((s,i)=>{
+    if(sfAnns[i]===undefined) return;
+    const{x,y,w,h}=sr(s);
+    const txt=String(sfAnns[i]);
+    const fz=fitFs(txt,w,h,11);
+    ctx.font=`bold ${fz}px Arial`;
+    ctx.textAlign='right'; ctx.textBaseline='alphabetic';
+    drawText(txt, x+w-3, y+3+fz, 'right', '#ffffff');
+  });
+
+  // Draw Cube annotations — bottom left, yellow-green
+  SLOTS.forEach((s,i)=>{
+    if(cubeAnns[i]===undefined) return;
+    const{x,y,w,h}=sr(s);
+    const txt=cubeAnns[i]+'%';
+    const fz=fitFs(txt,w,h,11);
+    ctx.font=`bold ${fz}px Arial`;
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    drawText(txt, x+3, y+h-3, 'left', '#aaff66');
+  });
+}
+
+// ── Download ──────────────────────────────────────────────────────────────────
+document.getElementById('dlBtn').addEventListener('click',()=>{
+  if(!img){ alert('No image loaded.'); return; }
+  const name=document.getElementById('charName').value.trim()||'gear-snapshot';
+  const a=document.createElement('a');
+  a.download=name+'.png';
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildValGrid();
+</script>
+</body>
+</html>
