@@ -102,6 +102,13 @@ input[type=number].num-in:focus { outline: none; border-color: #66aaff; }
 .set-btn.on { background: #2a1a4a; color: #cc88ff; border-color: #8844cc; }
 .mode-toggle { display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a4a; margin-bottom: 10px; }
 .mode-btn { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; background: #0f0f23; color: #888; }
+.tab-row { display: flex; border-bottom: 1px solid #2a2a4a; margin-bottom: 10px; }
+.tab { flex: 1; padding: 6px 4px; font-size: 12px; text-align: center; cursor: pointer; border: none; background: none; color: #888; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab.on { color: #66aaff; border-bottom-color: #66aaff; font-weight: 600; }
+.sftab { display: none; } .sftab.on { display: block; }
+.sfcorner-btn { flex: 1; padding: 7px 4px; font-size: 11px; border-radius: 6px; border: 1px solid #333; background: #0f0f23; color: #ccc; cursor: pointer; text-align: center; white-space: nowrap; }
+.sfcorner-btn.on { background: #1a3a6a; color: #66aaff; border-color: #66aaff; }
+.sfcorner-btn:hover { border-color: #66aaff; }
 .mode-btn.on.sf  { background: #1a3a6a; color: #66aaff; }
 .mode-btn.on.cub { background: #2a1a4a; color: #cc88ff; }
 #cropNotice { display:none; padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 10px; }
@@ -189,24 +196,45 @@ input[type=number].num-in:focus { outline: none; border-color: #66aaff; }
     <!-- SF panel -->
     <div class="card" id="sfCard" style="display:none;">
       <span class="lbl" style="margin-bottom:8px;">⭐ Star Forcing</span>
-      <span class="lbl">Number (0–30)</span>
-      <input type="number" class="num-in" id="sfInput" min="0" max="30" placeholder="e.g. 22">
-      <div class="err" id="sfErr">Enter a number between 0 and 30.</div>
-      <span class="lbl">Presets</span>
-      <div class="btns" style="margin-bottom:10px;">
-        <button class="btn sf" onclick="applyPreset(0,18)">0 → 18</button>
-        <button class="btn sf" onclick="applyPreset(18,21)">18 → 21</button>
-        <button class="btn sf" onclick="applyPreset(21,22)">21 → 22</button>
+      <div class="tab-row">
+        <button class="tab on" data-sftab="presets">Presets</button>
+        <button class="tab" data-sftab="manual">Manual</button>
       </div>
-      <span class="lbl">Apply</span>
-      <div class="btns">
-        <button class="btn sf" id="sfApplySel">Selected slots</button>
-        <button class="btn sf" id="sfApplyAll">All slots</button>
+
+      <!-- PRESETS TAB -->
+      <div class="sftab on" id="sftab-presets">
+        <span class="lbl">Apply to all slots</span>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+          <button class="btn sf preset-btn" data-bl="0"  data-tr="18">0 → 18 &nbsp;<span style="font-size:10px;color:#aaa;">(BL: 0, TR: 18)</span></button>
+          <button class="btn sf preset-btn" data-bl="18" data-tr="21">18 → 21 <span style="font-size:10px;color:#aaa;">(BL: 18, TR: 21)</span></button>
+          <button class="btn sf preset-btn" data-bl="21" data-tr="22">21 → 22 <span style="font-size:10px;color:#aaa;">(BL: 21, TR: 22)</span></button>
+        </div>
+        <hr class="divider">
+        <button class="btn danger" id="sfClearAllPreset" style="width:100%;margin-bottom:0;">Clear all</button>
       </div>
-      <hr class="divider">
-      <div class="btns">
-        <button class="btn danger" id="sfClearSel">Clear selected</button>
-        <button class="btn danger" id="sfClearAll">Clear all</button>
+
+      <!-- MANUAL TAB -->
+      <div class="sftab" id="sftab-manual" style="display:none;">
+        <span class="lbl">1. Enter number (0–30)</span>
+        <input type="number" class="num-in" id="sfInput" min="0" max="30" placeholder="e.g. 22">
+        <div class="err" id="sfErr">Enter a number between 0 and 30.</div>
+
+        <span class="lbl">2. Choose corner</span>
+        <div class="btns" style="margin-bottom:10px;">
+          <button class="sfcorner-btn on" data-corner="bl">↙ Bottom Left</button>
+          <button class="sfcorner-btn" data-corner="tr">↗ Top Right</button>
+          <button class="sfcorner-btn" data-corner="both">Both</button>
+        </div>
+
+        <span class="lbl">3. Click or drag slots to apply</span>
+        <div class="hint" style="margin-bottom:8px;">Click a slot to apply instantly. Click and drag to paint across multiple slots.</div>
+
+        <div class="btns" style="margin-bottom:6px;">
+          <button class="btn" id="sfDeselectAll">Deselect all</button>
+          <button class="btn danger" id="sfClearSel">Clear selected</button>
+          <button class="btn danger" id="sfClearAll">Clear all</button>
+        </div>
+        <div class="hint" id="sfSelStatus">No slots selected</div>
       </div>
     </div>
 
@@ -227,6 +255,7 @@ input[type=number].num-in:focus { outline: none; border-color: #66aaff; }
       </div>
       <hr class="divider">
       <div class="btns">
+        <button class="btn" id="cubeDeselectAll">Deselect all</button>
         <button class="btn danger" id="cubeClearSel">Clear selected</button>
         <button class="btn danger" id="cubeClearAll">Clear all</button>
       </div>
@@ -417,7 +446,20 @@ function buildOverlay(){
     const d=document.createElement('div');
     d.className='slot-box'; d.id='sb'+i;
     d.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
-    d.title=s.name; d.addEventListener('click',()=>toggleSlot(i));
+    d.title=s.name;
+    d.addEventListener('click',()=>toggleSlot(i));
+    d.addEventListener('mousedown',()=>{ isDragging=true; toggleSlot(i); });
+    d.addEventListener('mouseenter',()=>onSlotEnter(i));
+    d.addEventListener('touchstart',e=>{ isDragging=true; toggleSlot(i); e.preventDefault(); },{passive:false});
+    d.addEventListener('touchmove',e=>{
+      const t=e.touches[0];
+      const el=document.elementFromPoint(t.clientX,t.clientY);
+      if(el&&el.classList.contains('slot-box')){
+        const idx=parseInt(el.id.replace('sb',''));
+        if(!isNaN(idx)) onSlotEnter(idx);
+      }
+      e.preventDefault();
+    },{passive:false});
     overlay.appendChild(d);
   });
 }
@@ -439,11 +481,53 @@ function refreshOverlay(){
 function toggleSlot(i){
   const s=SLOTS[i];
   if(currentTool==='combo' && comboMode==='sf' && !s.sfOk) return;
+  // SF manual mode: clicking a slot applies the number instantly
+  if(currentTool==='sf' && document.getElementById('sftab-manual').style.display!=='none'){
+    applySFToSlot(i);
+    refreshOverlay();
+    return;
+  }
   if(selected.has(i)) selected.delete(i); else selected.add(i);
-  refreshOverlay();
+  refreshOverlay(); updateSFStatus();
 }
 
-// ── SF ────────────────────────────────────────────────────────────────────────
+function onSlotEnter(i){
+  if(!isDragging) return;
+  const s=SLOTS[i];
+  if(currentTool==='combo' && comboMode==='sf' && !s.sfOk) return;
+  if(currentTool==='sf' && document.getElementById('sftab-manual').style.display!=='none'){
+    applySFToSlot(i); refreshOverlay();
+  } else {
+    selected.add(i); refreshOverlay(); updateSFStatus();
+  }
+}
+
+// ── SF tabs ───────────────────────────────────────────────────────────────────
+document.querySelectorAll('[data-sftab]').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('[data-sftab]').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.sftab').forEach(x=>{ x.classList.remove('on'); x.style.display='none'; });
+  t.classList.add('on');
+  const tab=document.getElementById('sftab-'+t.dataset.sftab);
+  tab.classList.add('on'); tab.style.display='block';
+  selected.clear(); refreshOverlay(); updateSFStatus();
+}));
+
+// ── SF presets ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.preset-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  const bl=parseInt(btn.dataset.bl), tr=parseInt(btn.dataset.tr);
+  SF_SLOTS.forEach((_,i)=>{ sfAnns[i]={bl,tr}; });
+  redraw();
+}));
+document.getElementById('sfClearAllPreset').addEventListener('click',()=>{ sfAnns={}; redraw(); });
+
+// ── SF manual ─────────────────────────────────────────────────────────────────
+let sfCorner='bl'; // 'bl' | 'tr' | 'both'
+
+document.querySelectorAll('.sfcorner-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.sfcorner-btn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); sfCorner=b.dataset.corner;
+}));
+
 const sfInput=document.getElementById('sfInput'), sfErr=document.getElementById('sfErr');
 sfInput.addEventListener('keypress',e=>{ if(!/[0-9]/.test(e.key)) e.preventDefault(); });
 sfInput.addEventListener('input',()=>{
@@ -451,16 +535,32 @@ sfInput.addEventListener('input',()=>{
   const v=parseInt(sfInput.value);
   sfErr.classList.toggle('on',sfInput.value!==''&&(isNaN(v)||v<0||v>30));
 });
-function getSFVal(input,err){ const v=parseInt(input.value); if(isNaN(v)||v<0||v>30){err.classList.add('on');input.focus();return null;} err.classList.remove('on'); return v; }
+function getSFVal(){ const v=parseInt(sfInput.value); if(isNaN(v)||v<0||v>30){sfErr.classList.add('on');sfInput.focus();return null;} sfErr.classList.remove('on'); return v; }
 
-function applySFTo(slots, annsObj, input, err){
-  const v=getSFVal(input,err); if(v===null) return;
-  slots.forEach(i=>{ annsObj[i]=v; }); redraw();
+function applySFToSlot(i){
+  const v=getSFVal(); if(v===null) return;
+  const cur=sfAnns[i]||{};
+  if(sfCorner==='bl'||sfCorner==='both') cur.bl=v;
+  if(sfCorner==='tr'||sfCorner==='both') cur.tr=v;
+  sfAnns[i]=cur;
+  selected.add(i);
+  redraw(); updateSFStatus();
 }
-document.getElementById('sfApplySel').addEventListener('click',()=>applySFTo([...selected],sfAnns,sfInput,sfErr));
-document.getElementById('sfApplyAll').addEventListener('click',()=>applySFTo(SF_SLOTS.map((_,i)=>i),sfAnns,sfInput,sfErr));
+
+function updateSFStatus(){
+  const el=document.getElementById('sfSelStatus'); if(!el) return;
+  const n=selected.size;
+  el.textContent = n===0 ? 'No slots selected' : `${n} slot${n>1?'s':''} selected`;
+}
+
+document.getElementById('sfDeselectAll').addEventListener('click',()=>{ selected.clear(); refreshOverlay(); updateSFStatus(); });
 document.getElementById('sfClearSel').addEventListener('click',()=>{ selected.forEach(i=>delete sfAnns[i]); redraw(); });
 document.getElementById('sfClearAll').addEventListener('click',()=>{ sfAnns={}; redraw(); });
+
+// ── Drag-to-paint on slots (SF manual mode) ───────────────────────────────────
+let isDragging=false;
+document.addEventListener('mouseup',  ()=>{ isDragging=false; });
+document.addEventListener('touchend', ()=>{ isDragging=false; });
 
 window.applyPreset=function(bl,tr){
   SF_SLOTS.forEach((_,i)=>{ sfAnns[i]=tr; }); // top right = target
@@ -488,6 +588,7 @@ document.getElementById('setB').addEventListener('click',()=>{ cubeSet='B'; docu
 function applyCubeTo(slots,annsObj,val){ if(val===null){alert('Pick a % value first.');return;} slots.forEach(i=>{annsObj[i]=val;}); redraw(); }
 document.getElementById('cubeApplySel').addEventListener('click',()=>applyCubeTo([...selected],cubeAnns,cubeValue));
 document.getElementById('cubeApplyAll').addEventListener('click',()=>applyCubeTo(CUBE_SLOTS.map((_,i)=>i),cubeAnns,cubeValue));
+document.getElementById('cubeDeselectAll').addEventListener('click',()=>{ selected.clear(); refreshOverlay(); });
 document.getElementById('cubeClearSel').addEventListener('click',()=>{ selected.forEach(i=>delete cubeAnns[i]); redraw(); });
 document.getElementById('cubeClearAll').addEventListener('click',()=>{ cubeAnns={}; redraw(); });
 
