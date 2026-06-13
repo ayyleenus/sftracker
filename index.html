@@ -15,16 +15,19 @@ h1 { font-size: 30px; font-weight: 700; color: #fff; margin-bottom: 8px; }
 .landing-sub { font-size: 14px; color: #888; margin-bottom: 32px; }
 
 #uploadBox {
-  border: 2px dashed #3a3a6a; border-radius: 16px; padding: 40px 28px;
+  display: flex; flex-direction: column; align-items: center;
+  border: 2px dashed #3a3a6a; border-radius: 16px; padding: 36px 28px;
   text-align: center; cursor: pointer; background: #16213e;
   transition: border-color 0.2s, background 0.2s, transform 0.15s;
-  max-width: 320px; margin: 0 auto 32px;
+  max-width: 320px; margin: 0 auto 32px; user-select: none;
 }
 #uploadBox:hover { border-color: #66aaff; background: #1a2a4e; transform: translateY(-2px); }
 .upload-icon { font-size: 36px; margin-bottom: 12px; }
 .upload-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 6px; }
-.upload-sub { font-size: 12px; color: #666; line-height: 1.5; margin-bottom: 16px; }
-.upload-cta { display: inline-block; padding: 9px 20px; background: #1a3a6a; color: #66aaff; border: 1px solid #66aaff; border-radius: 8px; font-size: 13px; font-weight: 600; }
+.upload-sub { display: block; font-size: 12px; color: #666; line-height: 1.5; margin-bottom: 16px; }
+.upload-cta { display: inline-block; padding: 9px 20px; background: #1a3a6a; color: #66aaff; border: 1px solid #66aaff; border-radius: 8px; font-size: 13px; font-weight: 600; pointer-events: none; }
+.upload-paste { margin-top: 10px; font-size: 11px; color: #555; }
+kbd { background: #0f0f23; border: 1px solid #333; border-radius: 4px; padding: 1px 6px; font-size: 11px; color: #888; font-family: Arial, sans-serif; }
 #uploadBox:hover .upload-cta { background: #234a8a; }
 
 #requirements { border: 1px solid #2a2a4a; border-radius: 10px; overflow: hidden; text-align: left; }
@@ -110,20 +113,20 @@ input[type=number].num-in:focus { outline: none; border-color: #66aaff; }
 </head>
 <body>
 
-<input type="file" id="fileInput" accept="image/*" style="display:none">
-
 <!-- LANDING -->
 <div id="landing">
   <div id="landingInner">
     <div class="landing-logo">⚔️</div>
     <h1>MapleStory Gear Tools</h1>
     <p class="landing-sub">Upload your equipment screenshot once — then choose your tool</p>
-    <label id="uploadBox" for="fileInput">
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <div id="uploadBox" onclick="document.getElementById('fileInput').click()">
       <div class="upload-icon">📂</div>
       <div class="upload-title">Upload screenshot</div>
-      <div class="upload-sub">Full game screenshot or cropped equipment window</div>
+      <div class="upload-sub">Click to browse, or paste from clipboard</div>
       <div class="upload-cta">Click to upload</div>
-    </label>
+      <div class="upload-paste">or press <kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd> to paste</div>
+    </div>
     <div id="requirements">
       <div id="req-title">📋 Requirements before uploading</div>
       <div class="req-item"><span class="req-num">1</span><span>Resolution: <strong>1366 × 768</strong><br><span class="req-sub">Options → Graphics → Resolution</span></span></div>
@@ -171,7 +174,7 @@ input[type=number].num-in:focus { outline: none; border-color: #66aaff; }
       <div id="slotOverlay"></div>
     </div>
     <div id="belowCanvas">
-      <label class="below-btn" for="fileInput">📂 Load new image</label>
+      <button class="below-btn" id="loadNewBtn">📂 Load new image</button>
       <button class="below-btn" id="switchToolBtn">🔀 Switch tool</button>
     </div>
   </div>
@@ -603,6 +606,22 @@ function redraw(){
 }
 
 // ── Download ──────────────────────────────────────────────────────────────────
+// ── Paste from clipboard ──────────────────────────────────────────────────────
+document.addEventListener('paste', function(e){
+  // Only handle paste on landing or if no tool is active yet
+  const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+  for(let i=0; i<items.length; i++){
+    if(items[i].type.indexOf('image') !== -1){
+      const file = items[i].getAsFile();
+      if(file) loadFile(file);
+      break;
+    }
+  }
+});
+
+document.getElementById('loadNewBtn').addEventListener('click',()=>{
+  document.getElementById('fileInput').click();
+});
 document.getElementById('dlBtn').addEventListener('click',()=>{
   if(!img){alert('No image loaded.');return;}
   const name=document.getElementById('charName').value.trim()||'gear-tool';
