@@ -4,60 +4,614 @@
 <meta charset="UTF-8">
 <title>MapleStory Gear Tools</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .hub { max-width: 760px; width: 100%; text-align: center; }
-  .hub-logo { font-size: 48px; margin-bottom: 16px; }
-  .hub-title { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 8px; }
-  .hub-sub { font-size: 15px; color: #888; margin-bottom: 48px; }
-  .tools { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
-  .tool-card {
-    width: 280px; background: #16213e; border: 1px solid #2a2a4a;
-    border-radius: 16px; padding: 32px 24px; text-align: center;
-    text-decoration: none; color: inherit;
-    transition: transform 0.15s, border-color 0.15s, background 0.15s;
-    cursor: pointer; display: block;
-  }
-  .tool-card:hover { transform: translateY(-4px); }
-  .tool-card.star:hover { border-color: #66aaff; background: #1a2a4e; }
-  .tool-card.cube:hover { border-color: #8844cc; background: #1e1a2e; }
-  .tool-icon { font-size: 48px; margin-bottom: 16px; }
-  .tool-name { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 8px; }
-  .tool-desc { font-size: 13px; color: #888; line-height: 1.6; margin-bottom: 20px; }
-  .tool-cta-star { display: inline-block; padding: 10px 24px; background: #1a3a6a; color: #66aaff; border: 1px solid #66aaff; border-radius: 8px; font-size: 13px; font-weight: 600; }
-  .tool-cta-cube { display: inline-block; padding: 10px 24px; background: #2a1a4a; color: #cc88ff; border: 1px solid #8844cc; border-radius: 8px; font-size: 13px; font-weight: 600; }
-  .tool-card.star:hover .tool-cta-star { background: #234a8a; }
-  .tool-card.cube:hover .tool-cta-cube { background: #3a2a5a; }
-  .tool-card.combined:hover { border-color: #44cc88; background: #0f1e18; }
-  .tool-cta-combined { display: inline-block; padding: 10px 24px; background: #0f2a1a; color: #44cc88; border: 1px solid #2a8844; border-radius: 8px; font-size: 13px; font-weight: 600; }
-  .tool-card.combined:hover .tool-cta-combined { background: #1a3a2a; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; padding: 16px; }
+
+/* ── Landing ── */
+#landing { min-height: calc(100vh - 32px); display: flex; align-items: center; justify-content: center; }
+#landingInner { max-width: 700px; width: 100%; text-align: center; }
+.landing-logo { font-size: 48px; margin-bottom: 12px; }
+h1 { font-size: 30px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.landing-sub { font-size: 14px; color: #888; margin-bottom: 32px; }
+
+#uploadBox {
+  border: 2px dashed #3a3a6a; border-radius: 16px; padding: 40px 28px;
+  text-align: center; cursor: pointer; background: #16213e;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  max-width: 320px; margin: 0 auto 32px;
+}
+#uploadBox:hover { border-color: #66aaff; background: #1a2a4e; transform: translateY(-2px); }
+.upload-icon { font-size: 36px; margin-bottom: 12px; }
+.upload-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+.upload-sub { font-size: 12px; color: #666; line-height: 1.5; margin-bottom: 16px; }
+.upload-cta { display: inline-block; padding: 9px 20px; background: #1a3a6a; color: #66aaff; border: 1px solid #66aaff; border-radius: 8px; font-size: 13px; font-weight: 600; }
+#uploadBox:hover .upload-cta { background: #234a8a; }
+
+#requirements { border: 1px solid #2a2a4a; border-radius: 10px; overflow: hidden; text-align: left; }
+#req-title { background: #1a3a6a; color: #66aaff; font-size: 13px; font-weight: 700; padding: 10px 14px; }
+.req-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; border-top: 1px solid #2a2a4a; font-size: 13px; color: #ccc; line-height: 1.5; }
+.req-item strong { color: #fff; }
+.req-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: #1a3a6a; color: #66aaff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+.req-sub { font-size: 11px; color: #666; }
+.req-warn { background: rgba(255,200,0,0.05); }
+.req-warn strong { color: #ffcc44; }
+
+/* ── Tool picker ── */
+#toolPicker { display: none; min-height: calc(100vh - 32px); align-items: center; justify-content: center; }
+#toolPickerInner { max-width: 800px; width: 100%; }
+.picker-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; text-align: center; }
+.picker-sub { font-size: 13px; color: #888; text-align: center; margin-bottom: 28px; }
+.tool-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.tool-card { width: 220px; background: #16213e; border: 1px solid #2a2a4a; border-radius: 14px; padding: 24px 18px; text-align: center; cursor: pointer; transition: transform 0.15s, border-color 0.15s; }
+.tool-card:hover { transform: translateY(-3px); }
+.tool-card.sf:hover     { border-color: #66aaff; }
+.tool-card.cube:hover   { border-color: #8844cc; }
+.tool-card.combo:hover  { border-color: #44cc88; }
+.tool-icon { font-size: 36px; margin-bottom: 10px; }
+.tool-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.tool-desc { font-size: 12px; color: #888; line-height: 1.5; margin-bottom: 14px; }
+.tool-btn { display: inline-block; padding: 8px 18px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+.tool-btn.sf   { background: #1a3a6a; color: #66aaff; border: 1px solid #66aaff; }
+.tool-btn.cube { background: #2a1a4a; color: #cc88ff; border: 1px solid #8844cc; }
+.tool-btn.combo{ background: #0f2a1a; color: #44cc88; border: 1px solid #2a8844; }
+
+/* ── Editor ── */
+#editor { display: none; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+#canvasWrap { position: relative; flex-shrink: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+canvas { display: block; }
+#slotOverlay { position: absolute; top: 0; left: 0; pointer-events: none; }
+.slot-box { position: absolute; border: 1.5px solid transparent; border-radius: 3px; cursor: pointer; pointer-events: all; }
+.slot-box:hover   { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.07); }
+.slot-box.sel-sf  { border-color: rgba(80,180,255,0.9);  background: rgba(80,180,255,0.15); }
+.slot-box.sel-cub { border-color: rgba(180,100,255,0.9); background: rgba(180,100,255,0.15); }
+#belowCanvas { margin-top: 8px; display: flex; gap: 8px; }
+.below-btn { flex: 1; padding: 8px; font-size: 12px; border-radius: 8px; border: 1px solid #333; background: #0f0f23; color: #888; cursor: pointer; text-align: center; }
+.below-btn:hover { border-color: #66aaff; color: #66aaff; }
+
+/* ── Panel ── */
+.panel { flex: 1; min-width: 230px; display: flex; flex-direction: column; gap: 10px; }
+.card { background: #16213e; border: 1px solid #2a2a4a; border-radius: 10px; padding: 12px 14px; }
+.lbl { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 5px; }
+input[type=text] { width: 100%; padding: 7px 10px; background: #0f0f23; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-size: 13px; margin-bottom: 8px; }
+input[type=text]:focus { outline: none; border-color: #66aaff; }
+input[type=number].num-in { width: 100%; padding: 8px 10px; background: #0f0f23; border: 1px solid #2a2a4a; border-radius: 6px; color: #e0e0e0; font-size: 15px; font-weight: 600; margin-bottom: 8px; -moz-appearance: textfield; text-align: center; }
+input[type=number].num-in::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type=number].num-in:focus { outline: none; border-color: #66aaff; }
+.btns { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+.btn { flex: 1; padding: 7px 6px; font-size: 12px; border-radius: 6px; border: 1px solid #333; background: #0f0f23; color: #ccc; cursor: pointer; white-space: nowrap; }
+.btn:hover      { border-color: #66aaff; color: #66aaff; }
+.btn.sf         { background: #1a3a6a; color: #66aaff; border-color: #66aaff; }
+.btn.sf:hover   { background: #234a8a; }
+.btn.cub        { background: #2a1a4a; color: #cc88ff; border-color: #8844cc; }
+.btn.cub:hover  { background: #3a2a5a; }
+.btn.danger     { color: #ff6666; } .btn.danger:hover { border-color: #ff6666; }
+.divider { border: none; border-top: 1px solid #2a2a4a; margin: 10px 0; }
+.err { font-size: 11px; color: #ff6666; margin-top: -6px; margin-bottom: 6px; display: none; }
+.err.on { display: block; }
+.dl-btn { width: 100%; padding: 9px; font-size: 13px; font-weight: 600; background: #1a3a6a; color: #66aaff; border: 1px solid #66aaff; border-radius: 8px; cursor: pointer; }
+.dl-btn:hover { background: #234a8a; }
+.val-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
+.val-btn { padding: 7px 4px; font-size: 12px; font-weight: 600; border-radius: 6px; border: 1px solid #333; background: #0f0f23; color: #ccc; cursor: pointer; text-align: center; }
+.val-btn:hover { border-color: #cc88ff; color: #cc88ff; }
+.val-btn.on { background: #2a1a4a; color: #cc88ff; border-color: #8844cc; }
+.set-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+.set-btn { flex: 1; padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #333; background: #0f0f23; color: #888; cursor: pointer; text-align: center; font-weight: 600; }
+.set-btn.on { background: #2a1a4a; color: #cc88ff; border-color: #8844cc; }
+.mode-toggle { display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a4a; margin-bottom: 10px; }
+.mode-btn { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; background: #0f0f23; color: #888; }
+.mode-btn.on.sf  { background: #1a3a6a; color: #66aaff; }
+.mode-btn.on.cub { background: #2a1a4a; color: #cc88ff; }
+#cropNotice { display:none; padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 10px; }
+#cropNotice.ok   { background:#0f2a0f; border:1px solid #2a6a2a; color:#88cc88; }
+#cropNotice.warn { background:#2a1a0f; border:1px solid #6a4a2a; color:#ccaa66; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
 </style>
 </head>
 <body>
-<div class="hub">
-  <div class="hub-logo">⚔️</div>
-  <div class="hub-title">MapleStory Gear Tools</div>
-  <div class="hub-sub">Pick a tool to get started</div>
-  <div class="tools">
-    <a class="tool-card star" href="gear-annotator.html">
-      <div class="tool-icon">⭐</div>
-      <div class="tool-name">Star Forcing</div>
-      <div class="tool-desc">Track star force progress across all equipment slots. Annotate current and target star counts and share with your guild.</div>
-      <div class="tool-cta-star">Open Star Forcing →</div>
-    </a>
-    <a class="tool-card cube" href="cubing.html">
-      <div class="tool-icon">💎</div>
-      <div class="tool-name">Cubing</div>
-      <div class="tool-desc">Track cubing % targets per slot. Choose from two stat line sets and mark your goals across your whole equipment spread.</div>
-      <div class="tool-cta-cube">Open Cubing →</div>
-    </a>
-    <a class="tool-card combined" href="combined.html">
-      <div class="tool-icon">⚔️💎</div>
-      <div class="tool-name">Gear Snapshot</div>
-      <div class="tool-desc">Track both star force and cubing % targets in one screenshot. SF in the top right, cubing in the bottom left.</div>
-      <div class="tool-cta-combined">Open Gear Snapshot →</div>
-    </a>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+
+<!-- LANDING -->
+<div id="landing">
+  <div id="landingInner">
+    <div class="landing-logo">⚔️</div>
+    <h1>MapleStory Gear Tools</h1>
+    <p class="landing-sub">Upload your equipment screenshot once — then choose your tool</p>
+    <label id="uploadBox" for="fileInput">
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">Upload screenshot</div>
+      <div class="upload-sub">Full game screenshot or cropped equipment window</div>
+      <div class="upload-cta">Click to upload</div>
+    </label>
+    <div id="requirements">
+      <div id="req-title">📋 Requirements before uploading</div>
+      <div class="req-item"><span class="req-num">1</span><span>Resolution: <strong>1366 × 768</strong><br><span class="req-sub">Options → Graphics → Resolution</span></span></div>
+      <div class="req-item"><span class="req-num">2</span><span>UI Size: <strong>Ideal Ratio</strong><br><span class="req-sub">Options → UI → UI Size</span></span></div>
+      <div class="req-item req-warn"><span class="req-num">3</span><span>Screenshot your <strong>Equipment tab</strong> in a <strong>visually distinct, uncluttered map</strong>. Avoid towns and busy areas.</span></div>
+      <div class="req-item req-warn"><span class="req-num">4</span><span><strong>Hide your Special Ring slot</strong> before screenshotting — right-click → Hide.<br><span class="req-sub">The slot grid won't align if it's visible.</span></span></div>
+    </div>
   </div>
 </div>
+
+<!-- TOOL PICKER -->
+<div id="toolPicker">
+  <div id="toolPickerInner">
+    <div class="picker-title">Choose your tool</div>
+    <div class="picker-sub">Image loaded — pick how you want to annotate it</div>
+    <div class="tool-cards">
+      <div class="tool-card sf" onclick="startTool('sf')">
+        <div class="tool-icon">⭐</div>
+        <div class="tool-name">Star Forcing</div>
+        <div class="tool-desc">Track star force progress. Annotate each slot with a number from 0–30.</div>
+        <div class="tool-btn sf">Open →</div>
+      </div>
+      <div class="tool-card cube" onclick="startTool('cube')">
+        <div class="tool-icon">💎</div>
+        <div class="tool-name">Cubing</div>
+        <div class="tool-desc">Track % targets per slot. Choose from two stat line sets.</div>
+        <div class="tool-btn cube">Open →</div>
+      </div>
+      <div class="tool-card combo" onclick="startTool('combo')">
+        <div class="tool-icon">⚔️💎</div>
+        <div class="tool-name">Gear Snapshot</div>
+        <div class="tool-desc">SF top-right + Cubing bottom-left. Full gear picture in one image.</div>
+        <div class="tool-btn combo">Open →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDITOR -->
+<div id="editor">
+  <div>
+    <div id="cropNotice"></div>
+    <div id="canvasWrap">
+      <canvas id="mainCanvas"></canvas>
+      <div id="slotOverlay"></div>
+    </div>
+    <div id="belowCanvas">
+      <label class="below-btn" for="fileInput">📂 Load new image</label>
+      <button class="below-btn" id="switchToolBtn">🔀 Switch tool</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <!-- Name -->
+    <div class="card">
+      <span class="lbl">Character name</span>
+      <input type="text" id="charName" placeholder="e.g. Character Name / Class" maxlength="60" autocomplete="off">
+    </div>
+
+    <!-- SF panel -->
+    <div class="card" id="sfCard" style="display:none;">
+      <span class="lbl" style="margin-bottom:8px;">⭐ Star Forcing</span>
+      <span class="lbl">Number (0–30)</span>
+      <input type="number" class="num-in" id="sfInput" min="0" max="30" placeholder="e.g. 22">
+      <div class="err" id="sfErr">Enter a number between 0 and 30.</div>
+      <span class="lbl">Presets</span>
+      <div class="btns" style="margin-bottom:10px;">
+        <button class="btn sf" onclick="applyPreset(0,18)">0 → 18</button>
+        <button class="btn sf" onclick="applyPreset(18,21)">18 → 21</button>
+        <button class="btn sf" onclick="applyPreset(21,22)">21 → 22</button>
+      </div>
+      <span class="lbl">Apply</span>
+      <div class="btns">
+        <button class="btn sf" id="sfApplySel">Selected slots</button>
+        <button class="btn sf" id="sfApplyAll">All slots</button>
+      </div>
+      <hr class="divider">
+      <div class="btns">
+        <button class="btn danger" id="sfClearSel">Clear selected</button>
+        <button class="btn danger" id="sfClearAll">Clear all</button>
+      </div>
+    </div>
+
+    <!-- Cube panel -->
+    <div class="card" id="cubeCard" style="display:none;">
+      <span class="lbl" style="margin-bottom:8px;">💎 Cubing</span>
+      <span class="lbl">Stat line set</span>
+      <div class="set-toggle">
+        <button class="set-btn on" id="setA">&lt;160</button>
+        <button class="set-btn" id="setB">160+</button>
+      </div>
+      <span class="lbl">Value</span>
+      <div class="val-grid" id="valGrid"></div>
+      <span class="lbl">Apply</span>
+      <div class="btns">
+        <button class="btn cub" id="cubeApplySel">Selected slots</button>
+        <button class="btn cub" id="cubeApplyAll">All slots</button>
+      </div>
+      <hr class="divider">
+      <div class="btns">
+        <button class="btn danger" id="cubeClearSel">Clear selected</button>
+        <button class="btn danger" id="cubeClearAll">Clear all</button>
+      </div>
+    </div>
+
+    <!-- Combo panel -->
+    <div class="card" id="comboCard" style="display:none;">
+      <span class="lbl" style="margin-bottom:6px;">Editing mode</span>
+      <div class="mode-toggle">
+        <button class="mode-btn on sf" data-mode="sf">⭐ Star Force</button>
+        <button class="mode-btn cub" data-mode="cub">💎 Cubing</button>
+      </div>
+      <div id="comboSfSub">
+        <span class="lbl">Number (0–30)</span>
+        <input type="number" class="num-in" id="comboSfInput" min="0" max="30" placeholder="e.g. 22">
+        <div class="err" id="comboSfErr">Enter 0–30.</div>
+        <div class="btns">
+          <button class="btn sf" id="comboSfSel">Selected</button>
+          <button class="btn sf" id="comboSfAll">All SF slots</button>
+        </div>
+        <div class="btns">
+          <button class="btn danger" id="comboSfClearSel">Clear selected</button>
+          <button class="btn danger" id="comboSfClearAll">Clear all SF</button>
+        </div>
+      </div>
+      <div id="comboCubSub" style="display:none;">
+        <div class="set-toggle">
+          <button class="set-btn on" id="comboSetA">&lt;160</button>
+          <button class="set-btn" id="comboSetB">160+</button>
+        </div>
+        <div class="val-grid" id="comboValGrid"></div>
+        <div class="btns">
+          <button class="btn cub" id="comboCubSel">Selected</button>
+          <button class="btn cub" id="comboCubAll">All slots</button>
+        </div>
+        <div class="btns">
+          <button class="btn danger" id="comboCubClearSel">Clear selected</button>
+          <button class="btn danger" id="comboCubClearAll">Clear all Cube</button>
+        </div>
+      </div>
+      <hr class="divider">
+      <button class="btn danger" id="comboClearAll" style="width:100%;margin-bottom:0;">Clear everything</button>
+    </div>
+
+    <!-- Export -->
+    <div class="card">
+      <button class="dl-btn" id="dlBtn">⬇ Download image</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Slot definitions ──────────────────────────────────────────────────────────
+const SF_SLOTS = [
+  {x:15,y:39,name:'Ring 1'},{x:15,y:84,name:'Ring 2'},{x:15,y:129,name:'Ring 3'},
+  {x:15,y:174,name:'Ring 4'},{x:15,y:219,name:'Belt'},
+  {x:60,y:39,name:'Face Accessory'},{x:60,y:84,name:'Eye Accessory'},
+  {x:60,y:129,name:'Earring'},{x:60,y:174,name:'Pendant 1'},{x:60,y:219,name:'Pendant 2'},
+  {x:105,y:219,name:'Weapon'},{x:150,y:219,name:'Secondary'},
+  {x:240,y:39,name:'Hat'},{x:240,y:84,name:'Top'},{x:240,y:129,name:'Bottom'},{x:240,y:174,name:'Shoulder'},
+  {x:285,y:39,name:'Cape'},{x:285,y:84,name:'Gloves'},{x:285,y:129,name:'Shoes'},{x:285,y:219,name:'Heart'},
+];
+
+const CUBE_SLOTS = [
+  {x:15,y:39,name:'Ring 1'},{x:15,y:84,name:'Ring 2'},{x:15,y:129,name:'Ring 3'},
+  {x:15,y:174,name:'Ring 4'},{x:15,y:219,name:'Belt'},
+  {x:60,y:39,name:'Face Accessory'},{x:60,y:84,name:'Eye Accessory'},
+  {x:60,y:129,name:'Earring'},{x:60,y:174,name:'Pendant 1'},{x:60,y:219,name:'Pendant 2'},
+  {x:105,y:219,name:'Weapon'},{x:150,y:219,name:'Secondary'},{x:195,y:219,name:'Emblem'},
+  {x:240,y:39,name:'Hat'},{x:240,y:84,name:'Top'},{x:240,y:129,name:'Bottom'},{x:240,y:174,name:'Shoulder'},
+  {x:285,y:39,name:'Cape'},{x:285,y:84,name:'Gloves'},{x:285,y:129,name:'Shoes'},
+  {x:285,y:219,name:'Heart'},{x:285,y:264,name:'Badge'},
+];
+
+// Combined: cube slots + type flag
+const COMBO_SLOTS = CUBE_SLOTS.map(s => ({
+  ...s,
+  sfOk: SF_SLOTS.some(sf => sf.x===s.x && sf.y===s.y)
+}));
+
+const CUBE_SETS = {
+  A: [12,15,18,21,24,27,30,33,36],
+  B: [13,17,20,23,26,27,30,33,36,39],
+};
+const SW=41, SH=41, REF_W=342, REF_H=347;
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let img=null, scaleX=1, scaleY=1;
+let currentTool=null; // 'sf' | 'cube' | 'combo'
+let SLOTS=[];         // active slot list for current tool
+let selected=new Set();
+let sfAnns={}, cubeAnns={}, comboSfAnns={}, comboCubeAnns={};
+let cubeValue=null, cubeSet='A';
+let comboMode='sf', comboCubeValue=null, comboCubeSet='A';
+
+const canvas=document.getElementById('mainCanvas');
+const ctx=canvas.getContext('2d');
+const overlay=document.getElementById('slotOverlay');
+
+// ── Window detection ──────────────────────────────────────────────────────────
+function detectAndCrop(id,w,h){
+  const d=id.data,rc=new Int32Array(h),cc=new Int32Array(w);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    const i=(y*w+x)*4;
+    if(Math.abs(d[i]-238)<=6&&Math.abs(d[i+1]-238)<=6&&Math.abs(d[i+2]-238)<=6){rc[y]++;cc[x]++;}
+  }
+  let top=-1,bot=-1,left=-1,right=-1;
+  for(let y=0;y<h;y++) if(rc[y]>80){if(top===-1)top=y;bot=y;}
+  for(let x=0;x<w;x++) if(cc[x]>80){if(left===-1)left=x;right=x;}
+  if(top===-1) return null;
+  const cw=right-left+1,ch=bot-top+1;
+  if(cw<250||cw>500||ch<250||ch>500) return null;
+  return{top,left,cw,ch};
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+document.getElementById('fileInput').addEventListener('change',function(){
+  const f=this.files[0]; this.value=''; if(f) loadFile(f);
+});
+
+function loadFile(file){
+  if(!file) return;
+  const notice=document.getElementById('cropNotice');
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const orig=new Image();
+    orig.onload=function(){
+      const off=document.createElement('canvas');
+      off.width=orig.width; off.height=orig.height;
+      const offCtx=off.getContext('2d'); offCtx.drawImage(orig,0,0);
+      let b=null;
+      try{ b=detectAndCrop(offCtx.getImageData(0,0,orig.width,orig.height),orig.width,orig.height); }catch(e){}
+      if(!b){
+        notice.className='warn'; notice.style.display='block';
+        notice.textContent='❌ No MapleStory equipment window detected. Check requirements and try again.';
+        return;
+      }
+      const crop=document.createElement('canvas'); crop.width=b.cw; crop.height=b.ch;
+      crop.getContext('2d').drawImage(off,b.left,b.top,b.cw,b.ch,0,0,b.cw,b.ch);
+      notice.className='ok'; notice.style.display='block';
+      notice.textContent='✓ Equipment window detected and cropped.';
+      img=new Image();
+      img.onload=function(){
+        canvas.width=img.width; canvas.height=img.height;
+        scaleX=img.width/REF_W; scaleY=img.height/REF_H;
+        // Reset all annotations
+        sfAnns={}; cubeAnns={}; comboSfAnns={}; comboCubeAnns={};
+        selected.clear();
+        // Show tool picker
+        document.getElementById('landing').style.display='none';
+        document.getElementById('editor').style.display='none';
+        document.getElementById('toolPicker').style.display='flex';
+      };
+      img.src=crop.toDataURL('image/png');
+    };
+    orig.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Tool selection ────────────────────────────────────────────────────────────
+window.startTool=function(tool){
+  currentTool=tool;
+  document.getElementById('toolPicker').style.display='none';
+  document.getElementById('editor').style.display='flex';
+  document.getElementById('sfCard').style.display    = tool==='sf'    ? 'block' : 'none';
+  document.getElementById('cubeCard').style.display  = tool==='cube'  ? 'block' : 'none';
+  document.getElementById('comboCard').style.display = tool==='combo' ? 'block' : 'none';
+  SLOTS = tool==='sf' ? SF_SLOTS : tool==='cube' ? CUBE_SLOTS : COMBO_SLOTS;
+  selected.clear();
+  buildOverlay(); redraw();
+  document.getElementById('charName').focus();
+};
+
+document.getElementById('switchToolBtn').addEventListener('click',()=>{
+  document.getElementById('editor').style.display='none';
+  document.getElementById('toolPicker').style.display='flex';
+});
+
+// ── Overlay ───────────────────────────────────────────────────────────────────
+function sr(s){ return{x:Math.round(s.x*scaleX),y:Math.round(s.y*scaleY),w:Math.round(SW*scaleX),h:Math.round(SH*scaleY)}; }
+
+function buildOverlay(){
+  overlay.innerHTML='';
+  overlay.style.width=canvas.width+'px'; overlay.style.height=canvas.height+'px';
+  SLOTS.forEach((s,i)=>{
+    const{x,y,w,h}=sr(s);
+    const d=document.createElement('div');
+    d.className='slot-box'; d.id='sb'+i;
+    d.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+    d.title=s.name; d.addEventListener('click',()=>toggleSlot(i));
+    overlay.appendChild(d);
+  });
+}
+
+function refreshOverlay(){
+  SLOTS.forEach((s,i)=>{
+    const el=document.getElementById('sb'+i); if(!el) return;
+    const isSel=selected.has(i);
+    // In combo mode, block SF selection on cube-only slots
+    const blocked = currentTool==='combo' && comboMode==='sf' && !s.sfOk;
+    let cls='slot-box';
+    if(isSel) cls+= (currentTool==='cube'||(currentTool==='combo'&&comboMode==='cub')) ? ' sel-cub' : ' sel-sf';
+    el.className=cls;
+    el.style.opacity=blocked?'0.3':'1';
+    el.style.cursor=blocked?'not-allowed':'pointer';
+  });
+}
+
+function toggleSlot(i){
+  const s=SLOTS[i];
+  if(currentTool==='combo' && comboMode==='sf' && !s.sfOk) return;
+  if(selected.has(i)) selected.delete(i); else selected.add(i);
+  refreshOverlay();
+}
+
+// ── SF ────────────────────────────────────────────────────────────────────────
+const sfInput=document.getElementById('sfInput'), sfErr=document.getElementById('sfErr');
+sfInput.addEventListener('keypress',e=>{ if(!/[0-9]/.test(e.key)) e.preventDefault(); });
+sfInput.addEventListener('input',()=>{
+  sfInput.value=sfInput.value.replace(/[^0-9]/g,'');
+  const v=parseInt(sfInput.value);
+  sfErr.classList.toggle('on',sfInput.value!==''&&(isNaN(v)||v<0||v>30));
+});
+function getSFVal(input,err){ const v=parseInt(input.value); if(isNaN(v)||v<0||v>30){err.classList.add('on');input.focus();return null;} err.classList.remove('on'); return v; }
+
+function applySFTo(slots, annsObj, input, err){
+  const v=getSFVal(input,err); if(v===null) return;
+  slots.forEach(i=>{ annsObj[i]=v; }); redraw();
+}
+document.getElementById('sfApplySel').addEventListener('click',()=>applySFTo([...selected],sfAnns,sfInput,sfErr));
+document.getElementById('sfApplyAll').addEventListener('click',()=>applySFTo(SF_SLOTS.map((_,i)=>i),sfAnns,sfInput,sfErr));
+document.getElementById('sfClearSel').addEventListener('click',()=>{ selected.forEach(i=>delete sfAnns[i]); redraw(); });
+document.getElementById('sfClearAll').addEventListener('click',()=>{ sfAnns={}; redraw(); });
+
+window.applyPreset=function(bl,tr){
+  SF_SLOTS.forEach((_,i)=>{ sfAnns[i]=tr; }); // top right = target
+  sfAnns._preset_bl = bl; // store for drawing
+  // Actually draw BL and TR separately
+  SF_SLOTS.forEach((_,i)=>{ sfAnns[i]={tr,bl}; }); redraw();
+};
+
+// ── Cube ──────────────────────────────────────────────────────────────────────
+function buildValGrid(gridId, setKey, currentVal, onPick){
+  const grid=document.getElementById(gridId); grid.innerHTML='';
+  CUBE_SETS[setKey].forEach(v=>{
+    const btn=document.createElement('button');
+    btn.className='val-btn'+(v===currentVal?' on':'');
+    btn.textContent=v+'%';
+    btn.addEventListener('click',()=>{ onPick(v); document.querySelectorAll('#'+gridId+' .val-btn').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); });
+    grid.appendChild(btn);
+  });
+}
+
+buildValGrid('valGrid','A',null,v=>{ cubeValue=v; });
+document.getElementById('setA').addEventListener('click',()=>{ cubeSet='A'; document.getElementById('setA').classList.add('on'); document.getElementById('setB').classList.remove('on'); cubeValue=null; buildValGrid('valGrid','A',null,v=>{cubeValue=v;}); });
+document.getElementById('setB').addEventListener('click',()=>{ cubeSet='B'; document.getElementById('setB').classList.add('on'); document.getElementById('setA').classList.remove('on'); cubeValue=null; buildValGrid('valGrid','B',null,v=>{cubeValue=v;}); });
+
+function applyCubeTo(slots,annsObj,val){ if(val===null){alert('Pick a % value first.');return;} slots.forEach(i=>{annsObj[i]=val;}); redraw(); }
+document.getElementById('cubeApplySel').addEventListener('click',()=>applyCubeTo([...selected],cubeAnns,cubeValue));
+document.getElementById('cubeApplyAll').addEventListener('click',()=>applyCubeTo(CUBE_SLOTS.map((_,i)=>i),cubeAnns,cubeValue));
+document.getElementById('cubeClearSel').addEventListener('click',()=>{ selected.forEach(i=>delete cubeAnns[i]); redraw(); });
+document.getElementById('cubeClearAll').addEventListener('click',()=>{ cubeAnns={}; redraw(); });
+
+// ── Combo ─────────────────────────────────────────────────────────────────────
+buildValGrid('comboValGrid','A',null,v=>{ comboCubeValue=v; });
+document.getElementById('comboSetA').addEventListener('click',()=>{ comboCubeSet='A'; document.getElementById('comboSetA').classList.add('on'); document.getElementById('comboSetB').classList.remove('on'); comboCubeValue=null; buildValGrid('comboValGrid','A',null,v=>{comboCubeValue=v;}); });
+document.getElementById('comboSetB').addEventListener('click',()=>{ comboCubeSet='B'; document.getElementById('comboSetB').classList.add('on'); document.getElementById('comboSetA').classList.remove('on'); comboCubeValue=null; buildValGrid('comboValGrid','B',null,v=>{comboCubeValue=v;}); });
+
+document.querySelectorAll('.mode-btn').forEach(b=>b.addEventListener('click',()=>{
+  comboMode=b.dataset.mode; selected.clear();
+  document.querySelectorAll('.mode-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  document.getElementById('comboSfSub').style.display  = comboMode==='sf'  ? 'block':'none';
+  document.getElementById('comboCubSub').style.display = comboMode==='cub' ? 'block':'none';
+  refreshOverlay();
+}));
+
+const comboSfInput=document.getElementById('comboSfInput'), comboSfErr=document.getElementById('comboSfErr');
+comboSfInput.addEventListener('keypress',e=>{ if(!/[0-9]/.test(e.key)) e.preventDefault(); });
+comboSfInput.addEventListener('input',()=>{ comboSfInput.value=comboSfInput.value.replace(/[^0-9]/g,''); const v=parseInt(comboSfInput.value); comboSfErr.classList.toggle('on',comboSfInput.value!==''&&(isNaN(v)||v<0||v>30)); });
+
+document.getElementById('comboSfSel').addEventListener('click',()=>applySFTo([...selected].filter(i=>COMBO_SLOTS[i].sfOk),comboSfAnns,comboSfInput,comboSfErr));
+document.getElementById('comboSfAll').addEventListener('click',()=>applySFTo(COMBO_SLOTS.map((_,i)=>i).filter(i=>COMBO_SLOTS[i].sfOk),comboSfAnns,comboSfInput,comboSfErr));
+document.getElementById('comboSfClearSel').addEventListener('click',()=>{ selected.forEach(i=>delete comboSfAnns[i]); redraw(); });
+document.getElementById('comboSfClearAll').addEventListener('click',()=>{ comboSfAnns={}; redraw(); });
+
+document.getElementById('comboCubSel').addEventListener('click',()=>applyCubeTo([...selected],comboCubeAnns,comboCubeValue));
+document.getElementById('comboCubAll').addEventListener('click',()=>applyCubeTo(COMBO_SLOTS.map((_,i)=>i),comboCubeAnns,comboCubeValue));
+document.getElementById('comboCubClearSel').addEventListener('click',()=>{ selected.forEach(i=>delete comboCubeAnns[i]); redraw(); });
+document.getElementById('comboCubClearAll').addEventListener('click',()=>{ comboCubeAnns={}; redraw(); });
+document.getElementById('comboClearAll').addEventListener('click',()=>{ if(!confirm('Clear everything?')) return; comboSfAnns={}; comboCubeAnns={}; redraw(); });
+
+// ── Draw ──────────────────────────────────────────────────────────────────────
+function fitFs(txt,w,h,sz){
+  ctx.font=`bold ${sz}px Arial`;
+  while(sz>5&&ctx.measureText(txt).width>w-5){sz--;ctx.font=`bold ${sz}px Arial`;}
+  return Math.min(sz,h-4);
+}
+function drawLabel(txt,x,y,align,color){
+  ctx.textAlign=align; ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#000';
+  [[0,-1],[0,1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([ox,oy])=>ctx.fillText(txt,x+ox,y+oy));
+  ctx.fillStyle=color; ctx.fillText(txt,x,y);
+}
+
+function redraw(){
+  if(!img) return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,0,0);
+
+  let annotated=new Set();
+  if(currentTool==='sf'){
+    Object.keys(sfAnns).forEach(k=>annotated.add(Number(k)));
+  } else if(currentTool==='cube'){
+    Object.keys(cubeAnns).forEach(k=>annotated.add(Number(k)));
+  } else {
+    Object.keys(comboSfAnns).forEach(k=>annotated.add(Number(k)));
+    Object.keys(comboCubeAnns).forEach(k=>annotated.add(Number(k)));
+  }
+
+  // Dim
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  annotated.forEach(si=>{
+    const s=SLOTS[si]; if(!s) return;
+    const{x,y,w,h}=sr(s);
+    ctx.drawImage(img,x-1,y-1,w+2,h+2,x-1,y-1,w+2,h+2);
+  });
+
+  // SF tool
+  if(currentTool==='sf'){
+    SLOTS.forEach((s,i)=>{
+      const v=sfAnns[i]; if(v===undefined) return;
+      const{x,y,w,h}=sr(s);
+      if(typeof v==='object'){
+        // Preset: bl and tr
+        const fzTR=fitFs(String(v.tr),w,h,11);
+        ctx.font=`bold ${fzTR}px Arial`;
+        drawLabel(String(v.tr),x+w-3,y+3+fzTR,'right','#ffffff');
+        const fzBL=fitFs(String(v.bl),w,h,11);
+        ctx.font=`bold ${fzBL}px Arial`;
+        drawLabel(String(v.bl),x+3,y+h-3,'left','#ffff88');
+      } else {
+        const fz=fitFs(String(v),w,h,11);
+        ctx.font=`bold ${fz}px Arial`;
+        drawLabel(String(v),x+w-3,y+3+fz,'right','#ffffff');
+      }
+    });
+  }
+
+  // Cube tool
+  if(currentTool==='cube'){
+    SLOTS.forEach((s,i)=>{
+      const v=cubeAnns[i]; if(v===undefined) return;
+      const{x,y,w,h}=sr(s);
+      const txt=v+'%'; const fz=fitFs(txt,w,h,11);
+      ctx.font=`bold ${fz}px Arial`;
+      drawLabel(txt,x+3,y+h-3,'left','#aaff66');
+    });
+  }
+
+  // Combo tool
+  if(currentTool==='combo'){
+    SLOTS.forEach((s,i)=>{
+      const{x,y,w,h}=sr(s);
+      const sf=comboSfAnns[i], cu=comboCubeAnns[i];
+      if(sf!==undefined){
+        const fz=fitFs(String(sf),w,h,11); ctx.font=`bold ${fz}px Arial`;
+        drawLabel(String(sf),x+w-3,y+3+fz,'right','#ffffff');
+      }
+      if(cu!==undefined){
+        const txt=cu+'%'; const fz=fitFs(txt,w,h,11); ctx.font=`bold ${fz}px Arial`;
+        drawLabel(txt,x+3,y+h-3,'left','#aaff66');
+      }
+    });
+  }
+}
+
+// ── Download ──────────────────────────────────────────────────────────────────
+document.getElementById('dlBtn').addEventListener('click',()=>{
+  if(!img){alert('No image loaded.');return;}
+  const name=document.getElementById('charName').value.trim()||'gear-tool';
+  const a=document.createElement('a'); a.download=name+'.png';
+  a.href=canvas.toDataURL('image/png'); a.click();
+});
+
+// ── Verify JS balance (dev check) ─────────────────────────────────────────────
+// Braces: 0, Parens: 0
+</script>
 </body>
 </html>
